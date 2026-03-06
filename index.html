@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100 JSON Structures for n8n</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #0f1117;
+    --border: #1c2030;
+    --border-hover: #2a3050;
+    --accent: #00e5a0;
+    --accent-dim: rgba(0,229,160,0.08);
+    --text: #c8d0e0;
+    --muted: #4a5470;
+    --code-bg: #090c12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+
+  header {
+    padding: 3.5rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  .hglow {
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 260px;
+    background: radial-gradient(ellipse, rgba(0,229,160,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  header h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; color: #fff; letter-spacing: -2px; line-height: 1; }
+  header h1 em { font-style: normal; color: var(--accent); }
+  .subtitle { margin-top: 0.6rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+  .stats {
+    display: inline-flex; gap: 0.4rem; margin-top: 1.8rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.4rem 1rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted);
+  }
+  .stats span { color: var(--accent); font-weight: 600; }
+
+  .controls { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 0; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); width: 15px; height: 15px; pointer-events: none; }
+  .search-wrap input {
+    width: 100%; padding: 0.8rem 1rem 0.8rem 2.6rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.08); }
+  .search-wrap input::placeholder { color: var(--muted); }
+
+  .filters { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1rem; }
+  .filter-btn {
+    padding: 0.3rem 0.85rem; border-radius: 999px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+  .results-info {
+    max-width: 780px; margin: 1.2rem auto 0; padding: 0 1.5rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); min-height: 1rem;
+  }
+
+  .list { max-width: 780px; margin: 0.8rem auto 4rem; padding: 0 1.5rem; display: flex; flex-direction: column; gap: 0.35rem; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border-hover); }
+  .card.open { border-color: #232840; }
+
+  .card-header { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; cursor: pointer; user-select: none; }
+  .card-num { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); min-width: 32px; flex-shrink: 0; }
+
+  .tag { font-size: 0.58rem; padding: 0.18rem 0.55rem; border-radius: 999px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; flex-shrink: 0; font-weight: 500; }
+  .tag-crm     { background: rgba(124,106,247,0.14); color: #9b8df5; border: 1px solid rgba(124,106,247,0.25); }
+  .tag-ecom    { background: rgba(0,229,160,0.10);   color: #00e5a0; border: 1px solid rgba(0,229,160,0.25); }
+  .tag-finance { background: rgba(247,106,106,0.10); color: #f78080; border: 1px solid rgba(247,106,106,0.25); }
+  .tag-auth    { background: rgba(251,191,36,0.10);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+  .tag-notif   { background: rgba(56,189,248,0.10);  color: #38bdf8; border: 1px solid rgba(56,189,248,0.25); }
+  .tag-ia      { background: rgba(167,139,250,0.10); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+  .tag-log     { background: rgba(52,211,153,0.10);  color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  .tag-agend   { background: rgba(249,115,22,0.10);  color: #f97316; border: 1px solid rgba(249,115,22,0.25); }
+  .tag-api     { background: rgba(236,72,153,0.10);  color: #ec4899; border: 1px solid rgba(236,72,153,0.25); }
+  .tag-misc    { background: rgba(148,163,184,0.10); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25); }
+
+  .card-title { font-size: 0.85rem; font-weight: 700; color: #dde4f0; flex: 1; }
+
+  .card-chevron { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+  .card.open .card-chevron { transform: rotate(180deg); color: var(--accent); }
+
+  .card-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s cubic-bezier(0.4,0,0.2,1); }
+  .card.open .card-body { grid-template-rows: 1fr; }
+  .card-body-inner { overflow: hidden; }
+  .card-body-content { padding: 0.85rem 1rem 1rem; border-top: 1px solid var(--border); position: relative; }
+
+  .copy-btn {
+    position: absolute; top: 0.85rem; right: 1rem;
+    display: flex; align-items: center; gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    background: #0f1117; border: 1px solid var(--border);
+    border-radius: 6px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.08); }
+  .copy-btn svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid #151b28; border-radius: 8px;
+    padding: 1rem 1.1rem; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; line-height: 1.7; color: #8899bb;
+    white-space: pre-wrap; word-break: break-word; overflow: hidden;
+  }
+  .k { color: #7c6af7; } .s { color: #4ec994; } .n { color: #e8b86d; } .b { color: #f76a6a; }
+
+  .empty { text-align: center; padding: 5rem 2rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+  .empty strong { display: block; font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hglow"></div>
+  <h1>100 JSON<br><em>for n8n</em></h1>
+  <p class="subtitle">// reference payloads for client automations</p>
+  <div class="stats"><span>100</span> structures &nbsp;·&nbsp; <span>10</span> categories</div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="search by title, category or field..." oninput="render()">
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">all</button>
+    <button class="filter-btn" onclick="setFilter('crm',this)">crm</button>
+    <button class="filter-btn" onclick="setFilter('ecom',this)">e-commerce</button>
+    <button class="filter-btn" onclick="setFilter('finance',this)">financial</button>
+    <button class="filter-btn" onclick="setFilter('auth',this)">auth</button>
+    <button class="filter-btn" onclick="setFilter('notif',this)">notifications</button>
+    <button class="filter-btn" onclick="setFilter('ia',this)">IA</button>
+    <button class="filter-btn" onclick="setFilter('log',this)">logs</button>
+    <button class="filter-btn" onclick="setFilter('agend',this)">scheduling</button>
+    <button class="filter-btn" onclick="setFilter('api',this)">api</button>
+    <button class="filter-btn" onclick="setFilter('misc',this)">misc</button>
+  </div>
+</div>
+
+<div class="results-info" id="results-info"></div>
+<div class="list" id="list"></div>
+
+<footer>generated for use in n8n &mdash; Filipe Martins Teixeira</footer>
+
+<script>
+const items = [
+  { n:1, tag:'crm', title:'New lead', json:{lead:{id:"lead_001",name:"Maria Silva",email:"maria@email.com",phone:"+5511999990000",source:"landing_page",score:72,created_at:"2025-03-06T10:00:00Z"}} },
+  { n:2, tag:'crm', title:'Contact update', json:{contact_id:"c_842",updates:{email:"novo@email.com",phone:"+5511888880000",tags:["vip","renovacao"]},updated_by:"n8n_bot",timestamp:"2025-03-06T11:00:00Z"} },
+  { n:3, tag:'crm', title:'Opportunity pipeline', json:{opportunity:{id:"opp_293",client:"Empresa ABC",stage:"proposta",value:12500.00,currency:"BRL",probability:65,close_date:"2025-04-01",owner:"vendedor_01"}} },
+  { n:4, tag:'crm', title:'Interaction history', json:{contact_id:"c_100",interactions:[{type:"email",date:"2025-03-01",subject:"Proposta enviada"},{type:"call",date:"2025-03-04",duration_min:12,notes:"Interesse confirmado"}]} },
+  { n:5, tag:'crm', title:'Customer segmentation', json:{segment:{name:"Churned_Q1",filters:{last_purchase_days:{gt:90},total_spent:{lt:500}},count:238,updated_at:"2025-03-06"}} },
+  { n:6, tag:'crm', title:'Customer NPS', json:{nps:{client_id:"c_555",score:9,comment:"Atendimento excelente!",survey_id:"nps_q1_2025",submitted_at:"2025-03-06T09:30:00Z"}} },
+  { n:7, tag:'crm', title:'Follow-up task', json:{task:{id:"t_321",assigned_to:"vendedor_02",contact_id:"c_777",type:"follow_up",due:"2025-03-10",priority:"high",done:false}} },
+  { n:8, tag:'crm', title:'Sales proposal', json:{proposal:{id:"prop_099",client:"Tech Ltda",items:[{desc:"Consultoria n8n",qty:10,unit_price:350},{desc:"Setup inicial",qty:1,unit_price:1200}],total:4700,valid_until:"2025-03-20",status:"draft"}} },
+  { n:9, tag:'crm', title:'Churn detected', json:{alert:{type:"churn_risk",client_id:"c_202",risk_score:88,signals:["30d_sem_login","ticket_aberto","nps_baixo"],suggested_action:"contato_urgente",detected_at:"2025-03-06T08:00:00Z"}} },
+  { n:10, tag:'crm', title:'Company / Account', json:{account:{id:"acc_07",name:"Grupo XYZ",cnpj:"12.345.678/0001-90",segment:"enterprise",mrr:8900,plan:"enterprise_plus",csm:"joao.santos"}} },
+  { n:11, tag:'ecom', title:'New order', json:{order:{id:"ORD-2025-001",customer_id:"u_881",items:[{sku:"PROD-A",qty:2,price:89.90},{sku:"PROD-B",qty:1,price:149.00}],total:328.80,shipping:"PAC",status:"pending",created_at:"2025-03-06T12:00:00Z"}} },
+  { n:12, tag:'ecom', title:'Inventory update', json:{inventory_update:{sku:"PROD-X",warehouse:"SP-01",qty_before:50,qty_after:38,reason:"venda",ref_order:"ORD-2025-001",timestamp:"2025-03-06T12:05:00Z"}} },
+  { n:13, tag:'ecom', title:'Cart abandonment', json:{cart_abandoned:{cart_id:"cart_991",user_id:"u_445",items:[{name:"Tenis Runner",sku:"TEN-R-42",price:299.90}],total:299.90,abandoned_at:"2025-03-06T14:30:00Z",recovery_email_sent:false}} },
+  { n:14, tag:'ecom', title:'Return / Refund', json:{return_req:{id:"RET-088",order_id:"ORD-1999",reason:"produto_defeituoso",items:[{sku:"PROD-B",qty:1}],refund_amount:149.00,status:"aprovado",processed_at:"2025-03-06T16:00:00Z"}} },
+  { n:15, tag:'ecom', title:'Product review', json:{review:{product_id:"PROD-A",user_id:"u_881",rating:5,title:"Otimo produto!",body:"Chegou rapido e exatamente como descrito.",verified_purchase:true,date:"2025-03-06"}} },
+  { n:16, tag:'ecom', title:'Discount coupon', json:{coupon:{code:"BEMVINDO15",discount:{type:"percent",value:15},min_order:100,max_uses:500,used:34,valid_from:"2025-03-01",valid_until:"2025-03-31",active:true}} },
+  { n:17, tag:'ecom', title:'Delivery / Tracking', json:{shipment:{order_id:"ORD-2025-001",carrier:"Correios",tracking_code:"BR123456789BR",status:"em_transito",events:[{date:"2025-03-05",location:"Sao Paulo",desc:"Objeto postado"},{date:"2025-03-06",location:"Curitiba",desc:"Em transito"}]}} },
+  { n:18, tag:'ecom', title:'New product (catalog)', json:{product:{id:"PROD-Z",name:"Mochila Urban Pro",sku:"MCH-UP-001",price:349.90,categories:["mochilas","urbano"],stock:120,images:["img1.jpg","img2.jpg"],active:true}} },
+  { n:19, tag:'ecom', title:'Daily sales report', json:{report:{date:"2025-03-05",total_orders:87,revenue:14320.50,avg_ticket:164.60,top_products:["PROD-A","PROD-Z"],new_customers:22,returning_customers:65}} },
+  { n:20, tag:'ecom', title:'Stripe payment webhook', json:{stripe_event:"payment_intent.succeeded",stripe_data:{id:"pi_3P4Kk",amount:32880,currency:"brl",customer:"cus_Nx1",payment_method:"pm_1Abc",metadata:{order_id:"ORD-2025-001"}},created:1741258800} },
+  { n:21, tag:'finance', title:'Bank transaction', json:{transaction:{id:"txn_44901",type:"debit",amount:1500.00,currency:"BRL",account:"001-1",description:"Fornecedor ABC",date:"2025-03-06",balance_after:8300.00,category:"fornecedores"}} },
+  { n:22, tag:'finance', title:'Invoice issued', json:{invoice:{id:"NF-2025-0112",client_id:"acc_07",due_date:"2025-03-20",items:[{desc:"Servico de automacao",value:4500}],total:4500,tax:405,net:4095,status:"emitida"}} },
+  { n:23, tag:'finance', title:'Overdue invoice', json:{overdue:{invoice_id:"NF-2025-0080",client:"Tech Ltda",overdue_days:12,amount:3200,reminder_count:2,next_action:"ligar",due_date:"2025-02-22"}} },
+  { n:24, tag:'finance', title:'Subscription plan', json:{subscription:{id:"sub_9901",customer_id:"u_881",plan:"pro_monthly",price:99.90,billing_cycle:"monthly",started:"2025-01-01",next_billing:"2025-04-01",status:"active",payment_method:"cartao"}} },
+  { n:25, tag:'finance', title:'Account statement', json:{statement:{account:"001-1",period:{from:"2025-02-01",to:"2025-02-28"},opening_balance:5000,closing_balance:7300,credits:6800,debits:4500,transactions:34}} },
+  { n:26, tag:'finance', title:'Budget alert', json:{alert:{type:"budget_exceeded",category:"marketing",budget:2000,spent:2340,overflow_pct:17,period:"2025-03",notified_at:"2025-03-06T09:00:00Z"}} },
+  { n:27, tag:'finance', title:'PIX transfer', json:{pix:{id:"pix_88231",from:"12.345.678/0001-90",to:"987.654.321-00",amount:750.00,key_type:"cpf",key:"987.654.321-00",desc:"Pagamento servico",timestamp:"2025-03-06T10:22:00Z",status:"confirmado"}} },
+  { n:28, tag:'finance', title:'Boleto generated', json:{boleto:{id:"bol_3321",barcode:"23793.12345 67890.123456 78901.234567 8 12340000075000",amount:750.00,due:"2025-03-15",payer:{name:"Joao Costa",cpf:"987.654.321-00"},issued_at:"2025-03-06"}} },
+  { n:29, tag:'finance', title:'Financial reconciliation', json:{reconciliation:{date:"2025-03-05",bank_total:14200.00,system_total:14200.00,matched:true,discrepancies:[],run_at:"2025-03-06T07:00:00Z"}} },
+  { n:30, tag:'finance', title:'Simplified P&L', json:{dre:{period:"2025-02",revenue:45000,cogs:18000,gross_profit:27000,opex:9500,ebitda:17500,taxes:3150,net_income:14350}} },
+  { n:31, tag:'auth', title:'User login', json:{event_type:"user.login",user:{id:"u_881",email:"maria@email.com",role:"admin"},ip:"177.88.10.1",user_agent:"Mozilla/5.0",timestamp:"2025-03-06T09:00:00Z",success:true} },
+  { n:32, tag:'auth', title:'User registration', json:{event_type:"user.register",user:{id:"u_900",name:"Carlos Lima",email:"carlos@email.com",plan:"free"},source:"web",referral:null,created_at:"2025-03-06T11:00:00Z"} },
+  { n:33, tag:'auth', title:'Password reset', json:{event_type:"password.reset",user_id:"u_881",token:"abc123xyz",expires_at:"2025-03-06T12:00:00Z",requested_from_ip:"177.88.10.1",used:false} },
+  { n:34, tag:'auth', title:'User permissions', json:{user_id:"u_200",roles:["editor","viewer"],permissions:{posts:["create","read","update"],users:["read"],settings:["read"]},updated_by:"u_001",updated_at:"2025-03-06"} },
+  { n:35, tag:'auth', title:'JWT token payload', json:{sub:"u_881",email:"maria@email.com",role:"admin",org_id:"org_07",iat:1741258800,exp:1741345200,scope:["read","write"]} },
+  { n:36, tag:'auth', title:'Session expired', json:{event_type:"session.expired",user_id:"u_881",session_id:"sess_9921",last_activity:"2025-03-06T08:00:00Z",expired_at:"2025-03-06T09:00:00Z",auto_logout:true} },
+  { n:37, tag:'auth', title:'2FA enabled', json:{event_type:"2fa.enabled",user_id:"u_881",method:"totp",backup_codes_generated:8,enabled_at:"2025-03-06T10:30:00Z",ip:"177.88.10.1"} },
+  { n:38, tag:'auth', title:'Account lockout', json:{event_type:"account.locked",user_id:"u_302",failed_attempts:5,locked_at:"2025-03-06T08:45:00Z",unlock_at:"2025-03-06T09:45:00Z",reason:"brute_force"} },
+  { n:39, tag:'auth', title:'OAuth callback', json:{provider:"google",code:"4/P7q7W91a",state:"random_state_str",user:{email:"carlos@gmail.com",name:"Carlos Lima",picture:"https://pic.url"},scopes:["email","profile"]} },
+  { n:40, tag:'auth', title:'API key generated', json:{api_key:{id:"key_0041",name:"Producao n8n",key:"sk-live-xxxxxxxxxxxx",scopes:["read","write"],created_by:"u_001",created_at:"2025-03-06",expires_at:null,active:true}} },
+  { n:41, tag:'notif', title:'Push notification', json:{push:{user_id:"u_881",title:"Novo pedido recebido",body:"ORD-2025-001 foi confirmado.",extra:{order_id:"ORD-2025-001"},channel:"orders",sent_at:"2025-03-06T12:01:00Z"}} },
+  { n:42, tag:'notif', title:'Transactional email', json:{email:{to:"maria@email.com",template:"order_confirmation",vars:{name:"Maria",order_id:"ORD-2025-001",total:"R$ 328,80",link:"https://loja.com/pedido/ORD-2025-001"},sent_at:"2025-03-06T12:02:00Z"}} },
+  { n:43, tag:'notif', title:'SMS via Twilio', json:{sms:{to:"+5511999990000",body:"Seu codigo de verificacao e 482910. Valido por 5 minutos.",from:"+15005550006",sid:"SMxxx",status:"delivered",sent_at:"2025-03-06T12:00:00Z"}} },
+  { n:44, tag:'notif', title:'WhatsApp message', json:{whatsapp:{to:"5511999990000@c.us",type:"template",template:"pedido_confirmado",vars:{order_id:"ORD-2025-001",total:"328,80"},sent_at:"2025-03-06T12:02:00Z",status:"read"}} },
+  { n:45, tag:'notif', title:'Internal Slack alert', json:{slack:{channel:"#alerts",text:":warning: Churn detected",attachments:[{color:"danger",fields:[{title:"Cliente",value:"acc_07"},{title:"Score",value:"88/100"}]}],sent_at:"2025-03-06T08:05:00Z"}} },
+  { n:46, tag:'notif', title:'Outgoing webhook', json:{webhook:{event_name:"order.created",payload:{order_id:"ORD-2025-001",total:328.80,status:"pending"},target_url:"https://erp.cliente.com/hook",retries:0,sent_at:"2025-03-06T12:00:00Z"}} },
+  { n:47, tag:'notif', title:'In-app notification', json:{in_app:{user_id:"u_881",type:"info",title:"Relatorio pronto",message:"Seu DRE de fevereiro esta disponivel.",read:false,action_url:"/relatorios/dre",created_at:"2025-03-06T09:00:00Z"}} },
+  { n:48, tag:'notif', title:'Daily digest', json:{digest:{user_id:"u_001",date:"2025-03-06",summary:{new_leads:14,orders_today:87,open_tickets:5,revenue_today:14320.50},sent_via:"email",sent_at:"2025-03-06T07:30:00Z"}} },
+  { n:49, tag:'notif', title:'Downtime alert', json:{incident:{id:"inc_0021",service:"api_pagamentos",status:"down",started_at:"2025-03-06T03:10:00Z",resolved_at:null,affected_users:1203,notified_channels:["slack","email","pagerduty"]}} },
+  { n:50, tag:'notif', title:'Email campaign', json:{campaign:{id:"camp_112",name:"Reativacao Marco",segment:"Churned_Q1",template:"reactivation_v2",scheduled_at:"2025-03-10T10:00:00Z",total_recipients:238,status:"scheduled"}} },
+  { n:51, tag:'ia', title:'LLM prompt', json:{llm_request:{model:"claude-sonnet-4-20250514",system:"Voce e assistente de vendas.",messages:[{role:"user",content:"Quero saber sobre planos disponiveis."}],max_tokens:500,temperature:0.7}} },
+  { n:52, tag:'ia', title:'LLM response', json:{llm_response:{id:"msg_01Abc",model:"claude-sonnet-4-20250514",content:[{type:"text",text:"Temos tres planos: Starter, Pro e Enterprise..."}],usage:{input_tokens:24,output_tokens:112},stop_reason:"end_turn"}} },
+  { n:53, tag:'ia', title:'Text classification', json:{classification:{input:"Quero cancelar minha conta",model:"text-classifier-v2",labels:{intent:"cancelamento",sentiment:"negativo",urgency:"alta"},confidence:0.94,processed_at:"2025-03-06T10:00:00Z"}} },
+  { n:54, tag:'ia', title:'Document embedding', json:{embedding:{id:"emb_0991",source:"artigo_001.txt",model:"text-embedding-3-small",vector_length:1536,stored_in:"pinecone",namespace:"docs_cliente_07",created_at:"2025-03-06"}} },
+  { n:55, tag:'ia', title:'Data extraction (NER)', json:{ner:{input:"Ligue para Joao da Silva no telefone 11 9 1234-5678 amanha as 14h",entities:[{type:"PESSOA",value:"Joao da Silva"},{type:"TELEFONE",value:"11 9 1234-5678"},{type:"DATA_HORA",value:"amanha as 14h"}]}} },
+  { n:56, tag:'ia', title:'Automatic summary', json:{summary:{source_id:"ticket_332",original_length_chars:2400,summary:"Cliente relatou falha no checkout apos atualizacao. Problema ocorre somente no Safari.",model:"claude-haiku",generated_at:"2025-03-06T11:00:00Z"}} },
+  { n:57, tag:'ia', title:'Image generation', json:{image_gen:{prompt:"Logo minimalista para startup de fintech, cores azul e branco",model:"dall-e-3",size:"1024x1024",quality:"hd",result_url:"https://cdn.openai.com/images/xxx.png",generated_at:"2025-03-06T12:00:00Z"}} },
+  { n:58, tag:'ia', title:'Sentiment analysis', json:{sentiment:{text:"O suporte demorou mas resolveu bem o problema.",label:"positivo",score:0.71,subjectivity:0.85,aspects:[{aspect:"suporte",sentiment:"neutro"},{aspect:"resolucao",sentiment:"positivo"}]}} },
+  { n:59, tag:'ia', title:'RAG query result', json:{rag:{query:"Como cancelo minha assinatura?",retrieved_chunks:[{id:"doc_07_p3",score:0.92,text:"Para cancelar, acesse Configuracoes > Assinatura > Cancelar plano."}],final_answer:"Va em Configuracoes > Assinatura > Cancelar plano.",model:"claude-sonnet-4-20250514"}} },
+  { n:60, tag:'ia', title:'AI agent - tool call', json:{agent_step:{step:2,thought:"Preciso buscar o status do pedido antes de responder.",tool:"get_order_status",tool_input:{order_id:"ORD-2025-001"},tool_output:{status:"em_transito",eta:"2025-03-08"},next_action:"respond_to_user"}} },
+  { n:61, tag:'log', title:'Generic event log', json:{log:{level:"info",service:"n8n_workflow",workflow_id:"wf_882",message:"Execucao concluida com sucesso.",duration_ms:342,timestamp:"2025-03-06T12:00:00Z"}} },
+  { n:62, tag:'log', title:'Error log', json:{log:{level:"error",service:"api_pagamentos",error_code:"ERR_GATEWAY_TIMEOUT",message:"Stripe nao respondeu em 30s.",context:{order_id:"ORD-2025-002"},timestamp:"2025-03-06T12:10:00Z"}} },
+  { n:63, tag:'log', title:'Audit trail', json:{audit:{action:"invoice.deleted",performed_by:"u_001",target_type:"invoice",target_id:"NF-2025-0080",before:{status:"emitida"},after:null,ip:"177.88.10.1",timestamp:"2025-03-06T13:00:00Z"}} },
+  { n:64, tag:'log', title:'Performance metrics', json:{metrics:{service:"checkout_api",period:"1min",requests:142,errors:3,error_rate_pct:2.1,avg_latency_ms:88,p99_latency_ms:410,timestamp:"2025-03-06T12:00:00Z"}} },
+  { n:65, tag:'log', title:'n8n workflow execution', json:{workflow_run:{id:"run_8821",workflow_id:"wf_220",status:"success",nodes_executed:7,items_processed:45,duration_ms:1203,triggered_by:"webhook",started_at:"2025-03-06T09:00:00Z"}} },
+  { n:66, tag:'log', title:'LGPD / GDPR event', json:{compliance:{event_name:"data.access_request",user_id:"u_881",email:"maria@email.com",requested_at:"2025-03-06T09:30:00Z",data_types:["cadastro","pedidos","pagamentos"],status:"pendente",deadline:"2025-04-05"}} },
+  { n:67, tag:'log', title:'Health check', json:{health:{service:"n8n_core",status:"ok",version:"1.82.0",uptime_s:86400,checks:{db:"ok",redis:"ok",queue_size:3},checked_at:"2025-03-06T12:00:00Z"}} },
+  { n:68, tag:'log', title:'Deploy recorded', json:{deploy:{id:"dep_0091",service:"api_pagamentos",version:"v2.4.1",environment:"production",deployed_by:"ci_bot",duration_s:47,status:"success",deployed_at:"2025-03-06T03:00:00Z"}} },
+  { n:69, tag:'log', title:'External API usage', json:{api_usage:{provider:"openai",model:"gpt-4o",tokens_in:1200,tokens_out:320,cost_usd:0.024,workflow_id:"wf_882",date:"2025-03-06"}} },
+  { n:70, tag:'log', title:'Backup completed', json:{backup:{id:"bkp_441",type:"full",source:"postgres_prod",destination:"s3://backups/2025-03-06/",size_mb:1240,duration_s:93,status:"ok",created_at:"2025-03-06T02:00:00Z"}} },
+  { n:71, tag:'agend', title:'Calendar event', json:{cal_event:{id:"evt_771",title:"Reuniao de onboarding",start:"2025-03-10T14:00:00Z",end:"2025-03-10T15:00:00Z",attendees:["maria@email.com","joao@empresa.com"],location:"Google Meet",calendar:"vendas",created_by:"u_001"}} },
+  { n:72, tag:'agend', title:'Task reminder', json:{reminder:{task_id:"t_321",user_id:"u_001",title:"Follow-up com Tech Ltda",due:"2025-03-10T09:00:00Z",channel:"email",advance_min:1440,sent:false}} },
+  { n:73, tag:'agend', title:'Appointment booking', json:{appointment:{id:"apt_991",service:"Consultoria n8n",client:{id:"acc_07",name:"Grupo XYZ"},professional:"joao.santos",date:"2025-03-12",time:"10:00",duration_min:60,status:"confirmado"}} },
+  { n:74, tag:'agend', title:'Billing recurrence', json:{recurrence:{subscription_id:"sub_9901",next_charge:"2025-04-01",amount:99.90,method:"credit_card",card_last4:"4242",retries_on_fail:3,notify_before_days:3}} },
+  { n:75, tag:'agend', title:'Scheduled job (cron)', json:{cron_job:{id:"job_112",name:"relatorio_diario",expression:"0 7 * * *",workflow_id:"wf_030",last_run:"2025-03-06T07:00:00Z",next_run:"2025-03-07T07:00:00Z",status:"ativo"}} },
+  { n:76, tag:'agend', title:'Schedule availability', json:{availability:{professional:"joao.santos",date:"2025-03-12",timezone:"America/Sao_Paulo",slots:[{start:"09:00",end:"10:00",available:true},{start:"10:00",end:"11:00",available:false},{start:"14:00",end:"15:00",available:true}]}} },
+  { n:77, tag:'agend', title:'Event check-in', json:{checkin:{event_id:"evt_100",attendee:{name:"Maria Silva",email:"maria@email.com",ticket:"TKT-0021"},checked_in_at:"2025-03-10T14:02:00Z",badge_printed:true}} },
+  { n:78, tag:'agend', title:'Appointment cancellation', json:{cancellation:{appointment_id:"apt_880",cancelled_by:"client",reason:"conflito de agenda",cancelled_at:"2025-03-06T16:00:00Z",refund_eligible:true,reschedule_offered:true}} },
+  { n:79, tag:'agend', title:'Occupancy report', json:{occupancy:{professional:"joao.santos",period:{from:"2025-03-01",to:"2025-03-06"},total_slots:30,booked:22,cancelled:3,no_show:1,occupancy_rate_pct:73}} },
+  { n:80, tag:'agend', title:'Deadline alert', json:{deadline_alert:{project:"redesign_site",task:"entrega_wireframes",due:"2025-03-08",days_remaining:2,assigned_to:"u_200",priority:"high",notified_at:"2025-03-06T08:00:00Z"}} },
+  { n:81, tag:'api', title:'Generic HTTP request', json:{http_request:{method:"POST",url:"https://api.cliente.com/orders",headers:{"Content-Type":"application/json","X-API-Key":"sk-xxx"},body:{product_id:"PROD-A",qty:2},timeout_ms:5000}} },
+  { n:82, tag:'api', title:'Paginated response', json:{response:{items:[{id:1,name:"Item A"},{id:2,name:"Item B"}],pagination:{total:240,page:1,per_page:2,total_pages:120,next_page_url:"https://api.cliente.com/items?page=2"}}} },
+  { n:83, tag:'api', title:'Standardized API error', json:{error:{code:"VALIDATION_ERROR",status:422,message:"Campos invalidos na requisicao.",details:[{field:"email",issue:"formato invalido"},{field:"phone",issue:"obrigatorio"}],request_id:"req_9921",timestamp:"2025-03-06T12:00:00Z"}} },
+  { n:84, tag:'api', title:'Rate limit exceeded', json:{error:{code:"RATE_LIMIT_EXCEEDED",status:429,message:"Muitas requisicoes. Tente novamente em 60 segundos.",retry_after_s:60,limit:100,remaining:0,reset_at:"2025-03-06T12:01:00Z"}} },
+  { n:85, tag:'api', title:'Incoming webhook', json:{webhook_in:{id:"wh_in_8812",source:"stripe",event_type:"invoice.paid",received_at:"2025-03-06T12:00:00Z",signature_valid:true,payload:{invoice_id:"in_1Abc",amount_paid:9990,currency:"brl",customer:"cus_Nx1"}}} },
+  { n:86, tag:'api', title:'GraphQL query', json:{graphql:{query:"{ user(id: 'u_881') { name email orders { id total } } }",variables:{},operation_name:null,context:{user_id:"u_001",org_id:"org_07"}}} },
+  { n:87, tag:'api', title:'Request batch', json:{batch:{id:"batch_001",requests:[{method:"GET",path:"/users/u_881"},{method:"GET",path:"/orders?user=u_881"},{method:"POST",path:"/events",body:{type:"page_view"}}],total:3,parallel:true}} },
+  { n:88, tag:'api', title:'Cache invalidated', json:{cache:{event_name:"invalidated",keys:["user:u_881:profile","user:u_881:orders"],reason:"update",triggered_by:"workflow_crm",timestamp:"2025-03-06T13:00:00Z"}} },
+  { n:89, tag:'api', title:'Request retry', json:{retry:{request_id:"req_9920",attempt:3,max_attempts:5,last_error:"502 Bad Gateway",next_retry_at:"2025-03-06T12:05:00Z",backoff_ms:4000,workflow_id:"wf_220"}} },
+  { n:90, tag:'api', title:'Integration config', json:{integration:{id:"int_001",name:"ERP Cliente ABC",type:"rest_api",base_url:"https://erp.abc.com/api/v2",auth:{type:"oauth2",token_url:"/oauth/token",client_id:"n8n_app"},active:true,created_at:"2025-01-15"}} },
+  { n:91, tag:'misc', title:'Form submitted', json:{form:{id:"form_221",name:"Contato site",submitted_by:{name:"Pedro Alves",email:"pedro@email.com"},fields:{assunto:"Orcamento",mensagem:"Gostaria de um orcamento para automacao.",como_conheceu:"Google"},submitted_at:"2025-03-06T15:00:00Z"}} },
+  { n:92, tag:'misc', title:'File upload', json:{upload:{id:"file_0091",name:"proposta_comercial.pdf",size_bytes:204800,mime_type:"application/pdf",uploaded_by:"u_881",storage:"s3",path:"uploads/2025/03/proposta_comercial.pdf",url:"https://cdn.empresa.com/...",created_at:"2025-03-06T11:30:00Z"}} },
+  { n:93, tag:'misc', title:'User settings', json:{settings:{user_id:"u_881",theme:"dark",language:"pt-BR",timezone:"America/Porto_Alegre",notifications:{email:true,push:true,sms:false,digest_hour:7},updated_at:"2025-03-01"}} },
+  { n:94, tag:'misc', title:'Content translation', json:{translation:{source_lang:"pt",target_lang:"en",original:"Ola, bem-vindo ao nosso sistema!",translated:"Hello, welcome to our system!",model:"deepl",confidence:0.99,chars_billed:42}} },
+  { n:95, tag:'misc', title:'Geolocation', json:{geo:{ip:"177.88.10.1",country:"BR",region:"Rio Grande do Sul",city:"Porto Xavier",lat:-27.903,lon:-55.323,isp:"Claro",timezone:"America/Sao_Paulo",mobile:false,proxy:false}} },
+  { n:96, tag:'misc', title:'Survey data', json:{survey:{id:"surv_2025_q1",respondent_id:"u_881",answers:[{question_id:"q1",answer:"Sim"},{question_id:"q2",answer:"Entre 5-10 automacoes"},{question_id:"q3",answer:"n8n e excelente"}],completed_at:"2025-03-06T10:00:00Z",duration_s:45}} },
+  { n:97, tag:'misc', title:'Analytics event', json:{analytics:{event_name:"button_click",user_id:"u_881",session_id:"sess_9921",properties:{page:"/checkout",button_id:"btn_comprar",variant:"A"},context:{device:"mobile",browser:"Safari",os:"iOS"},timestamp:"2025-03-06T12:00:00Z"}} },
+  { n:98, tag:'misc', title:'IoT / sensor data', json:{sensor:{device_id:"dev_0041",type:"temperatura",location:"sala_servidor",value:24.3,unit:"celsius",alert:false,thresholds:{min:18,max:28},recorded_at:"2025-03-06T12:00:00Z"}} },
+  { n:99, tag:'misc', title:'Scraping result', json:{scrape:{url:"https://concorrente.com/pricing",scraped_at:"2025-03-06T06:00:00Z",scrape_data:{plans:[{name:"Starter",price:"R$ 49/mes"},{name:"Pro",price:"R$ 149/mes"}],last_updated:"2025-02"}}} },
+  { n:100, tag:'misc', title:'Feature flag', json:{feature_flag:{key:"checkout_v2",enabled:true,rollout_pct:50,target_segments:["beta_users","enterprise"],override_users:["u_001"],updated_by:"u_001",updated_at:"2025-03-05"}} }
+];
+
+let activeFilter = 'all';
+const openSet = new Set();
+
+function syntaxHighlight(json) {
+  return JSON.stringify(json, null, 2)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/(\"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\\"])*\"(\s*:)?|\b(true|false|null)\b|-?\d+(\.\d+)?([eE][+-]?\d+)?)/g, m => {
+      let c = 'n';
+      if (/^"/.test(m)) { c = /:$/.test(m) ? 'k' : 's'; }
+      else if (/true|false|null/.test(m)) c = 'b';
+      return `<span class="${c}">${m}</span>`;
+    });
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function toggle(n) {
+  openSet.has(n) ? openSet.delete(n) : openSet.add(n);
+  const card = document.getElementById('c' + n);
+  if (card) card.classList.toggle('open', openSet.has(n));
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = items.filter(i => {
+    const matchF = activeFilter === 'all' || i.tag === activeFilter;
+    const matchQ = !q || i.title.toLowerCase().includes(q) || i.tag.includes(q) || JSON.stringify(i.json).toLowerCase().includes(q);
+    return matchF && matchQ;
+  });
+
+  const info = document.getElementById('results-info');
+  info.textContent = (q || activeFilter !== 'all')
+    ? `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`
+    : '';
+
+  const list = document.getElementById('list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><strong>∅</strong>no structures found</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(i => {
+    const isOpen = openSet.has(i.n);
+    return `
+    <div class="card${isOpen ? ' open' : ''}" id="c${i.n}">
+      <div class="card-header" onclick="toggle(${i.n})">
+        <span class="card-num">#${String(i.n).padStart(3,'0')}</span>
+        <span class="tag tag-${i.tag}">${i.tag}</span>
+        <span class="card-title">${i.title}</span>
+        <svg class="card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <div class="card-body-content">
+            <button class="copy-btn" onclick="copyJSON(event,${i.n})" id="cpbtn${i.n}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              copy
+            </button>
+            <pre>${syntaxHighlight(i.json)}</pre>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copyJSON(e, n) {
+  e.stopPropagation();
+  const item = items.find(i => i.n === n);
+  if (!item) return;
+
+  const text = JSON.stringify(item.json, null, 2);
+
+  // fallback universal via textarea + execCommand
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(err) {}
+  document.body.removeChild(ta);
+
+  // tenta clipboard API por cima se disponível
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+
+  const btn = document.getElementById('cpbtn' + n);
+  if (!btn) return;
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg> copied!';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> copy';
+  }, 1800);
+}
+
+render();
+</script>
+</body>
+</html>
